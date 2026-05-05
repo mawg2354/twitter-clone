@@ -1,0 +1,72 @@
+--- Slide 2 ---
+Introduction
+This project is a prototype of a microblogging platform inspired by Twitter (X).
+It allows users to create short posts, interact with others, and view personalized content.
+
+--- Slide 3 ---
+Purpose Of The Application
+Enable users to share short messages 
+Allow social interaction between users 
+Provide a personalized content feed 
+Demonstrate relational database design using PostgreSQL 
+
+--- Slide 4 ---
+Core Features
+1
+. 
+User Registration & Login 
+2. 
+Create Posts (Tweets) 
+3. 
+Follow / Unfollow Users 
+4. 
+Like Posts 
+5. 
+Comment on Posts 
+6. 
+Personalized Timeline 
+
+--- Slide 5 ---
+What the System will Do
+Post content 
+Follow other users 
+View posts from followed users 
+Interact through likes and comments 
+
+--- Slide 6 ---
+Technology Stack
+Backend: Python (Flask)
+Frontend: 
+HTML, CSS, JavaScript
+Database: PostgreSQL
+
+--- Slide 7 ---
+Database Overview
+Using a relational database to store and manage data
+efficiently.
+Main Table:
+User
+Posts
+Follows
+Likes
+Comments
+
+--- Slide 8 ---
+Relationships
+One User 
+
+ Many Posts
+Users 
+Users ( Follow) Many to Many
+Users Posts (Likes) Many-to-Many
+One Post  Many Comments
+
+--- Slide 9 ---
+ER Diagram
+ENTITY RELATIONS DIAGRAM 
+
+--- Slide 10 ---
+Conclusion
+This project demonstrates how a social media system can be
+designed using relational database, focusing on user interaction 
+and structured data relationships

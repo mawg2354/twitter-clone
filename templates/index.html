@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="home-wrapper">
+    {% if current_user.is_authenticated %}
+        <div class="timeline">
+            <div class="compose-box glass-panel">
+                <form method="POST" action="{{ url_for('index') }}">
+                    <textarea name="content" placeholder="What is happening?!" required rows="3"></textarea>
+                    <div class="compose-actions">
+                        <button type="submit" class="btn btn-primary">Post</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="feed">
+                {% for post in posts %}
+                    <div class="tweet-card glass-panel">
+                        <div class="tweet-header">
+                            <span class="tweet-author">@{{ post.author.username }}</span>
+                            <span class="tweet-time">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+                        </div>
+                        <div class="tweet-content">
+                            {{ post.content }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="glass-panel" style="text-align: center; color: var(--text-muted);">
+                        No posts yet. Be the first to post!
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="hero">
+            <h1>Happening now</h1>
+            <p>Join TwitterClone today.</p>
+            <div class="hero-actions">
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Create account</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline">Sign in</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
