@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
-from models import db, User, Post
+from models import db, User, Post, Comment
 from dotenv import load_dotenv
 import os
 from flask_bcrypt import Bcrypt
@@ -97,6 +97,53 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+@app.route('/like/<int:post_id>', methods=['POST'])
+@login_required
+def like_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post in current_user.liked_posts:
+        current_user.liked_posts.remove(post)
+    else:
+        current_user.liked_posts.append(post)
+    db.session.commit()
+    return redirect(request.referrer or url_for('index'))
+
+@app.route('/post/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def post_detail(post_id):
+    post = Post.query.get_or_404(post_id)
+    if request.method == 'POST':
+        content = request.form.get('content')
+        if content:
+            comment = Comment(content=content, user_id=current_user.id, post_id=post.id)
+            db.session.add(comment)
+            db.session.commit()
+            flash('Comment added!', 'success')
+        return redirect(url_for('post_detail', post_id=post.id))
+    return render_template('post.html', post=post)
+
+@app.route('/user/<username>')
+@login_required
+def profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = user.posts.order_by(Post.created_at.desc()).all()
+    return render_template('profile.html', user=user, posts=posts)
+
+@app.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    if user == current_user:
+        flash('You cannot follow yourself!', 'error')
+        return redirect(url_for('profile', username=username))
+    
+    if user in current_user.followed:
+        current_user.followed.remove(user)
+    else:
+        current_user.followed.append(user)
+    db.session.commit()
+    return redirect(url_for('profile', username=username))
 
 if __name__ == '__main__':
     with app.app_context():
