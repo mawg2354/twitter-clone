@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="timeline">
+    <div class="glass-panel" style="margin-bottom: 2rem; text-align: center;">
+        <h2 style="margin-bottom: 0.5rem;">@{{ user.username }}</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">Joined {{ user.created_at.strftime('%B %Y') }}</p>
+        
+        <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem;">
+            <div><strong>{{ user.followers.count() }}</strong> Followers</div>
+            <div><strong>{{ user.followed.count() }}</strong> Following</div>
+        </div>
+
+        {% if user != current_user %}
+            <form action="{{ url_for('follow', username=user.username) }}" method="POST">
+                {% if user in current_user.followed %}
+                    <button type="submit" class="btn btn-outline">Unfollow</button>
+                {% else %}
+                    <button type="submit" class="btn btn-primary">Follow</button>
+                {% endif %}
+            </form>
+        {% else %}
+            <span class="btn btn-outline" style="opacity: 0.5; cursor: default;">This is you</span>
+        {% endif %}
+    </div>
+
+    <h3>Posts by @{{ user.username }}</h3>
+    <div class="feed" style="margin-top: 1rem;">
+        {% for post in posts %}
+            <div class="tweet-card glass-panel">
+                <div class="tweet-header">
+                    <span class="tweet-author">@{{ post.author.username }}</span>
+                    <span class="tweet-time">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+                </div>
+                <div class="tweet-content">
+                    <a href="{{ url_for('post_detail', post_id=post.id) }}" style="color: inherit; text-decoration: none;">
+                        {{ post.content }}
+                    </a>
+                </div>
+                <div class="tweet-footer">
+                    <div class="interaction">
+                        <a href="{{ url_for('post_detail', post_id=post.id) }}" class="btn-clear">💬 {{ post.comments.count() }}</a>
+                    </div>
+                    <div class="interaction">
+                        <form action="{{ url_for('like_post', post_id=post.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn-clear {% if post in current_user.liked_posts %}liked{% endif %}">
+                                {% if post in current_user.liked_posts %}❤️{% else %}🤍{% endif %} {{ post.liked_by.count() }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="glass-panel" style="text-align: center; color: var(--text-muted);">
+                No posts yet.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
