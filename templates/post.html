@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="timeline">
+    <a href="{{ url_for('index') }}" class="btn btn-outline" style="margin-bottom: 1rem;">← Back to Timeline</a>
+    <div class="tweet-card glass-panel" style="margin-bottom: 2rem;">
+        <div class="tweet-header">
+            <a href="{{ url_for('profile', username=post.author.username) }}" class="tweet-author">@{{ post.author.username }}</a>
+            <span class="tweet-time">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+        </div>
+        <div class="tweet-content" style="font-size: 1.4rem;">
+            {{ post.content }}
+        </div>
+        <div class="tweet-footer">
+            <div class="interaction">
+                <form action="{{ url_for('like_post', post_id=post.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn-clear {% if post in current_user.liked_posts %}liked{% endif %}">
+                        {% if post in current_user.liked_posts %}❤️{% else %}🤍{% endif %} {{ post.liked_by.count() }} Likes
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <h3>Comments</h3>
+    <div class="compose-box glass-panel" style="margin-top: 1rem; padding: 1rem;">
+        <form method="POST" action="{{ url_for('post_detail', post_id=post.id) }}">
+            <textarea name="content" placeholder="Post your reply" required rows="2" style="font-size: 1rem;"></textarea>
+            <div class="compose-actions">
+                <button type="submit" class="btn btn-primary" style="padding: 0.4rem 1rem;">Reply</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="feed">
+        {% for comment in post.comments %}
+            <div class="tweet-card glass-panel" style="padding: 1rem;">
+                <div class="tweet-header">
+                    <a href="{{ url_for('profile', username=comment.author.username) }}" class="tweet-author">@{{ comment.author.username }}</a>
+                    <span class="tweet-time">{{ comment.created_at.strftime('%b %d, %Y') }}</span>
+                </div>
+                <div class="tweet-content" style="font-size: 1rem;">
+                    {{ comment.content }}
+                </div>
+            </div>
+        {% else %}
+            <div class="glass-panel" style="text-align: center; color: var(--text-muted); padding: 1rem;">
+                No comments yet.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
