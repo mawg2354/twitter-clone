@@ -267,3 +267,23 @@ a:hover {
     font-size: 1.1rem;
     word-wrap: break-word;
 }
+
+/* Interactions */
+.tweet-footer {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(56, 68, 77, 0.5);
+}
+.interaction .btn-clear {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    padding: 0;
+}
+.interaction .btn-clear:hover {
+    color: var(--primary);
+}
+.interaction .btn-clear.liked {
+    color: #e0245e;
+}
