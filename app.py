@@ -52,6 +52,17 @@ def save_file(file, folder=''):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.context_processor
+def inject_suggestions():
+    if current_user.is_authenticated:
+        # Suggest users the current user doesn't follow, excluding self
+        followed_ids = [u.id for u in current_user.followed]
+        followed_ids.append(current_user.id)
+        
+        suggested_users = User.query.filter(~User.id.in_(followed_ids)).limit(3).all()
+        return dict(suggested_users=suggested_users)
+    return dict(suggested_users=[])
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -275,7 +286,7 @@ def follow(username):
         notification = Notification(type='follow', sender_id=current_user.id, recipient_id=user.id)
         db.session.add(notification)
     db.session.commit()
-    return redirect(url_for('profile', username=username))
+    return redirect(request.referrer or url_for('profile', username=username))
 
 @app.route('/search')
 @login_required
