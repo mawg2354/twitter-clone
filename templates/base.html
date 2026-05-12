@@ -72,7 +72,24 @@
             </div>
             <div class="widget-panel">
                 <h3 class="widget-title">Who to follow</h3>
-                <div style="color: var(--text-muted); font-size: 0.9rem;">Suggestions coming soon.</div>
+                {% if suggested_users %}
+                    {% for user in suggested_users %}
+                    <div class="suggestion-item">
+                        <div class="suggestion-info">
+                            <img src="{{ url_for('static', filename=user.profile_image) }}" alt="{{ user.username }}" class="logo-img" style="width: 40px; height: 40px; margin-right: 10px;">
+                            <div>
+                                <a href="{{ url_for('profile', username=user.username) }}" class="suggestion-name">{{ user.username }}</a>
+                                <div class="suggestion-handle">@{{ user.username }}</div>
+                            </div>
+                        </div>
+                        <form action="{{ url_for('follow', username=user.username) }}" method="POST">
+                            <button type="submit" class="btn btn-primary btn-sm">Follow</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="color: var(--text-muted); font-size: 0.9rem;">No suggestions right now.</div>
+                {% endif %}
             </div>
         </aside>
 
