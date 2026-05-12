@@ -249,6 +249,39 @@ a:hover {
     width: 100%;
 }
 
+.btn-sm {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+}
+
+/* Suggestion Items */
+.suggestion-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+}
+
+.suggestion-info {
+    display: flex;
+    align-items: center;
+}
+
+.suggestion-name {
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+.suggestion-name:hover {
+    text-decoration: underline;
+}
+
+.suggestion-handle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
 /* Forms and Cards */
 .auth-wrapper {
     display: flex;
