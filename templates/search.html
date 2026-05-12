@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="page-title">Search results for "{{ query }}"</h2>
+</div>
+
+<div class="search-results">
+    <div class="tabs" style="display: flex; border-bottom: 1px solid var(--border);">
+        <div class="tab active" style="padding: 1rem; border-bottom: 3px solid var(--primary); font-weight: 700;">People</div>
+    </div>
+
+    <div class="user-list" style="padding: 1rem;">
+        {% for user in users %}
+            <div class="user-card" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                        <img src="{{ url_for('static', filename=user.profile_image) }}" alt="profile" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div>
+                        <a href="{{ url_for('profile', username=user.username) }}" style="color: var(--text-main); font-weight: 700; text-decoration: none;">@{{ user.username }}</a>
+                        {% if user.bio %}
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">{{ user.bio }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    {% if user != current_user %}
+                        <form action="{{ url_for('follow', username=user.username) }}" method="POST">
+                            <button type="submit" class="btn {% if user in current_user.followed %}btn-outline{% else %}btn-primary{% endif %}">
+                                {% if user in current_user.followed %}Following{% else %}Follow{% endif %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                No users found matching "{{ query }}".
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="tabs" style="display: flex; border-bottom: 1px solid var(--border); margin-top: 2rem;">
+        <div class="tab active" style="padding: 1rem; border-bottom: 3px solid var(--primary); font-weight: 700;">Posts</div>
+    </div>
+
+    <div class="feed">
+        {% for post in posts %}
+            <div class="tweet-card" style="border-bottom: 1px solid var(--border); padding: 1rem 0;">
+                <div style="display: flex; gap: 1rem;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                        <img src="{{ url_for('static', filename=post.author.profile_image) }}" alt="profile" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="tweet-header">
+                            <a href="{{ url_for('profile', username=post.author.username) }}" class="tweet-author">@{{ post.author.username }}</a>
+                            <span class="tweet-time">· {{ post.created_at.strftime('%b %d') }}</span>
+                        </div>
+                        <div class="tweet-content">
+                            <a href="{{ url_for('post_detail', post_id=post.id) }}" style="color: inherit; text-decoration: none;">
+                                {{ post.content }}
+                            </a>
+                            {% if post.image_url %}
+                                <div style="margin-top: 1rem; border-radius: 1rem; overflow: hidden; border: 1px solid var(--border);">
+                                    <img src="{{ url_for('static', filename=post.image_url) }}" style="width: 100%; display: block;" alt="Post image">
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                No posts found matching "{{ query }}".
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

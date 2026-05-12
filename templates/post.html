@@ -1,51 +1,102 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="page-header" style="display: flex; align-items: center; gap: 2rem;">
+    <a href="{{ url_for('index') }}" style="color: var(--text-main);"><i data-lucide="arrow-left"></i></a>
+    <h2 class="page-title">Post</h2>
+</div>
+
 <div class="timeline">
-    <a href="{{ url_for('index') }}" class="btn btn-outline" style="margin-bottom: 1rem;">← Back to Timeline</a>
-    <div class="tweet-card glass-panel" style="margin-bottom: 2rem;">
-        <div class="tweet-header">
-            <a href="{{ url_for('profile', username=post.author.username) }}" class="tweet-author">@{{ post.author.username }}</a>
-            <span class="tweet-time">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+    <div class="tweet-detail" style="padding: 1rem; border-bottom: 1px solid var(--border);">
+        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                <img src="{{ url_for('static', filename=post.author.profile_image) }}" alt="profile" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div>
+                <div style="font-weight: 700; color: var(--text-main);">@{{ post.author.username }}</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">{{ post.author.username }}</div>
+            </div>
         </div>
-        <div class="tweet-content" style="font-size: 1.4rem;">
+        <div class="tweet-content" style="font-size: 1.5rem; margin-bottom: 1rem; line-height: 1.3;">
             {{ post.content }}
+            {% if post.image_url %}
+                <div style="margin-top: 1rem; border-radius: 1rem; overflow: hidden; border: 1px solid var(--border);">
+                    <img src="{{ url_for('static', filename=post.image_url) }}" style="width: 100%; display: block;" alt="Post image">
+                </div>
+            {% endif %}
         </div>
-        <div class="tweet-footer">
+        <div style="color: var(--text-muted); font-size: 0.95rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+            {{ post.created_at.strftime('%I:%M %p · %b %d, %Y') }}
+        </div>
+        <div style="display: flex; gap: 1.5rem; padding: 1rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem;">
+            <div><strong style="color: var(--text-main);">{{ post.liked_by.count() }}</strong> <span style="color: var(--text-muted);">Likes</span></div>
+        </div>
+        <div class="tweet-footer" style="border: none; padding-top: 0.8rem; justify-content: space-around;">
+            <div class="interaction">
+                <i data-lucide="message-circle" style="width: 22px; color: var(--text-muted);"></i>
+            </div>
             <div class="interaction">
                 <form action="{{ url_for('like_post', post_id=post.id) }}" method="POST" style="display: inline;">
-                    <button type="submit" class="btn-clear {% if post in current_user.liked_posts %}liked{% endif %}">
-                        {% if post in current_user.liked_posts %}❤️{% else %}🤍{% endif %} {{ post.liked_by.count() }} Likes
+                    <button type="submit" class="btn-clear {% if post in current_user.liked_posts %}liked{% endif %}" style="background: none; border: none; cursor: pointer; color: inherit;">
+                        {% if post in current_user.liked_posts %}
+                            <i data-lucide="heart" style="width: 22px; fill: #e0245e; color: #e0245e;"></i>
+                        {% else %}
+                            <i data-lucide="heart" style="width: 22px;"></i>
+                        {% endif %}
                     </button>
                 </form>
+            </div>
+            <div class="interaction">
+                <i data-lucide="share" style="width: 22px; color: var(--text-muted);"></i>
             </div>
         </div>
     </div>
 
-    <h3>Comments</h3>
-    <div class="compose-box glass-panel" style="margin-top: 1rem; padding: 1rem;">
+    <!-- Reply Box -->
+    <div class="compose-box" style="border-bottom: 1px solid var(--border);">
         <form method="POST" action="{{ url_for('post_detail', post_id=post.id) }}">
-            <textarea name="content" placeholder="Post your reply" required rows="2" style="font-size: 1rem;"></textarea>
-            <div class="compose-actions">
-                <button type="submit" class="btn btn-primary" style="padding: 0.4rem 1rem;">Reply</button>
+            <div style="display: flex; gap: 1rem;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                    <img src="{{ url_for('static', filename=current_user.profile_image) }}" alt="profile" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="flex: 1;">
+                    <textarea name="content" placeholder="Post your reply" required rows="2" style="width: 100%; font-size: 1.2rem;"></textarea>
+                    <div class="compose-actions" style="margin-top: 0.5rem;">
+                        <button type="submit" class="btn btn-primary">Reply</button>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
 
+    <!-- Comments Feed -->
     <div class="feed">
         {% for comment in post.comments %}
-            <div class="tweet-card glass-panel" style="padding: 1rem;">
-                <div class="tweet-header">
-                    <a href="{{ url_for('profile', username=comment.author.username) }}" class="tweet-author">@{{ comment.author.username }}</a>
-                    <span class="tweet-time">{{ comment.created_at.strftime('%b %d, %Y') }}</span>
+            <div class="tweet-card" style="border-bottom: 1px solid var(--border); border-radius: 0;">
+                <div style="display: flex; gap: 1rem;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                        <img src="{{ url_for('static', filename=comment.author.profile_image) }}" alt="profile" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="tweet-header">
+                            <div>
+                                <a href="{{ url_for('profile', username=comment.author.username) }}" class="tweet-author" style="color: var(--text-main); font-weight: 700;">@{{ comment.author.username }}</a>
+                                <span class="tweet-time" style="color: var(--text-muted);">· {{ comment.created_at.strftime('%b %d') }}</span>
+                            </div>
+                        </div>
+                        <div class="tweet-content">
+                            {{ comment.content }}
+                        </div>
+                        <div class="tweet-footer" style="border: none; padding-top: 0.8rem; justify-content: flex-start; gap: 4rem;">
+                            <div class="interaction">
+                                <i data-lucide="message-circle" style="width: 18px; color: var(--text-muted);"></i>
+                            </div>
+                            <div class="interaction">
+                                <i data-lucide="heart" style="width: 18px; color: var(--text-muted);"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="tweet-content" style="font-size: 1rem;">
-                    {{ comment.content }}
-                </div>
-            </div>
-        {% else %}
-            <div class="glass-panel" style="text-align: center; color: var(--text-muted); padding: 1rem;">
-                No comments yet.
             </div>
         {% endfor %}
     </div>

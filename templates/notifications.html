@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h2 class="page-title">Notifications</h2>
+</div>
+
+<div class="feed">
+    {% for notification in notifications %}
+        <div class="tweet-card" style="border-bottom: 1px solid var(--border); border-radius: 0; padding: 1rem;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                    <img src="{{ url_for('static', filename=notification.sender.profile_image) }}" alt="profile" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 1rem;">
+                        <a href="{{ url_for('profile', username=notification.sender.username) }}" style="color: var(--text-main); font-weight: 700; text-decoration: none;">@{{ notification.sender.username }}</a>
+                        
+                        {% if notification.type == 'like' %}
+                            liked your <a href="{{ url_for('post_detail', post_id=notification.post_id) }}" style="color: var(--primary); text-decoration: none;">post</a>.
+                        {% elif notification.type == 'comment' %}
+                            commented on your <a href="{{ url_for('post_detail', post_id=notification.post_id) }}" style="color: var(--primary); text-decoration: none;">post</a>.
+                        {% elif notification.type == 'follow' %}
+                            followed you.
+                        {% endif %}
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem;">
+                        {{ notification.created_at.strftime('%b %d, %Y') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div style="padding: 3rem; text-align: center; color: var(--text-muted);">
+            No notifications yet.
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

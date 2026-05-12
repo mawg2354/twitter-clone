@@ -22,6 +22,10 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     date_of_birth = db.Column(db.Date, nullable=True)
+    bio = db.Column(db.String(160), nullable=True)
+    location = db.Column(db.String(30), nullable=True)
+    profile_image = db.Column(db.String(255), default='default_profile.png')
+    cover_image = db.Column(db.String(255), default='default_cover.png')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -44,6 +48,7 @@ class Post(db.Model):
     content = db.Column(db.String(280), nullable=False) # 280 chars like Twitter
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    image_url = db.Column(db.String(255), nullable=True)
     
     comments = db.relationship('Comment', backref='post', lazy='dynamic', cascade="all, delete-orphan")
 
@@ -53,3 +58,16 @@ class Comment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(20), nullable=False) # 'like', 'follow', 'comment', 'mention'
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=True)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    sender = db.relationship('User', foreign_keys=[sender_id])
+    recipient = db.relationship('User', foreign_keys=[recipient_id])
+    post = db.relationship('Post', foreign_keys=[post_id])

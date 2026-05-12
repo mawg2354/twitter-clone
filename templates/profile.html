@@ -1,60 +1,157 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="timeline">
-    <div class="glass-panel" style="margin-bottom: 2rem; text-align: center;">
-        <h2 style="margin-bottom: 0.5rem;">@{{ user.username }}</h2>
-        <p style="color: var(--text-muted); margin-bottom: 1rem;">Joined {{ user.created_at.strftime('%B %Y') }}</p>
-        
-        <div style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem;">
-            <div><strong>{{ user.followers.count() }}</strong> Followers</div>
-            <div><strong>{{ user.followed.count() }}</strong> Following</div>
+<div class="page-header" style="display: flex; align-items: center; gap: 2rem;">
+    <a href="{{ url_for('index') }}" style="color: var(--text-main);"><i data-lucide="arrow-left"></i></a>
+    <div>
+        <h2 class="page-title">{{ user.username }}</h2>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ posts|length }} posts</div>
+    </div>
+</div>
+
+<div class="profile-container">
+    <!-- Header Image -->
+    <div class="profile-header-img" style="height: 200px; background: url({{ url_for('static', filename=user.cover_image) }}) center/cover; width: 100%;"></div>
+    
+    <!-- Profile Info -->
+    <div class="profile-info" style="padding: 1rem; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <!-- Profile Picture -->
+            <div class="profile-header-img"  style="height: 200px; background: url('{{ url_for('static', filename=user.cover_image if user.cover_image else 'images/default-cover.jpg') }}') center/cover no-repeat;
+            width: 100%;"> </div>
+            
+            <!-- Actions -->
+            <div style="margin-top: 1rem;">
+                {% if user != current_user %}
+                    <form action="{{ url_for('follow', username=user.username) }}" method="POST">
+                        <button type="submit" class="btn {% if user in current_user.followed %}btn-outline{% else %}btn-primary{% endif %}">
+                            {% if user in current_user.followed %}Following{% else %}Follow{% endif %}
+                        </button>
+                    </form>
+                {% else %}
+                    <button class="btn btn-outline" onclick="document.getElementById('edit-profile-modal').style.display='block'">Edit profile</button>
+                {% endif %}
+            </div>
         </div>
 
-        {% if user != current_user %}
-            <form action="{{ url_for('follow', username=user.username) }}" method="POST">
-                {% if user in current_user.followed %}
-                    <button type="submit" class="btn btn-outline">Unfollow</button>
-                {% else %}
-                    <button type="submit" class="btn btn-primary">Follow</button>
-                {% endif %}
-            </form>
-        {% else %}
-            <span class="btn btn-outline" style="opacity: 0.5; cursor: default;">This is you</span>
+        <div style="margin-top: 1rem;">
+            <h2 style="font-weight: 800; font-size: 1.5rem;">{{ user.username }}</h2>
+            <div style="color: var(--text-muted);">@{{ user.username }}</div>
+        </div>
+
+        {% if user.bio %}
+            <div style="margin-top: 1rem; font-size: 1rem;">
+                {{ user.bio }}
+            </div>
         {% endif %}
+
+        <div style="margin-top: 1rem; display: flex; gap: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+            {% if user.location %}
+                <div style="display: flex; align-items: center; gap: 0.3rem;">
+                    <i data-lucide="map-pin" style="width: 16px;"></i> {{ user.location }}
+                </div>
+            {% endif %}
+            <div style="display: flex; align-items: center; gap: 0.3rem;">
+                <i data-lucide="calendar" style="width: 16px;"></i> Joined {{ user.created_at.strftime('%B %Y') }}
+            </div>
+        </div>
+
+        <div style="margin-top: 1rem; display: flex; gap: 1.5rem; font-size: 0.9rem;">
+            <div><strong style="color: var(--text-main);">{{ user.followed.count() }}</strong> <span style="color: var(--text-muted);">Following</span></div>
+            <div><strong style="color: var(--text-main);">{{ user.followers.count() }}</strong> <span style="color: var(--text-muted);">Followers</span></div>
+        </div>
     </div>
 
-    <h3>Posts by @{{ user.username }}</h3>
-    <div class="feed" style="margin-top: 1rem;">
+    <!-- Tabs -->
+    <div class="tabs" style="display: flex; border-bottom: 1px solid var(--border); margin-top: 1rem;">
+        <div class="tab active" style="flex: 1; text-align: center; padding: 1rem; border-bottom: 4px solid var(--primary); font-weight: 700;">Posts</div>
+        <div class="tab" style="flex: 1; text-align: center; padding: 1rem; color: var(--text-muted); font-weight: 600;">Replies</div>
+        <div class="tab" style="flex: 1; text-align: center; padding: 1rem; color: var(--text-muted); font-weight: 600;">Media</div>
+        <div class="tab" style="flex: 1; text-align: center; padding: 1rem; color: var(--text-muted); font-weight: 600;">Likes</div>
+    </div>
+
+    <!-- Profile Feed -->
+    <div class="feed">
         {% for post in posts %}
-            <div class="tweet-card glass-panel">
-                <div class="tweet-header">
-                    <span class="tweet-author">@{{ post.author.username }}</span>
-                    <span class="tweet-time">{{ post.created_at.strftime('%b %d, %Y') }}</span>
-                </div>
-                <div class="tweet-content">
-                    <a href="{{ url_for('post_detail', post_id=post.id) }}" style="color: inherit; text-decoration: none;">
-                        {{ post.content }}
-                    </a>
-                </div>
-                <div class="tweet-footer">
-                    <div class="interaction">
-                        <a href="{{ url_for('post_detail', post_id=post.id) }}" class="btn-clear">💬 {{ post.comments.count() }}</a>
+            <div class="tweet-card" style="border-bottom: 1px solid var(--border); border-radius: 0;">
+                <div style="display: flex; gap: 1rem;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                        <img src="{{ url_for('static', filename=post.author.profile_image) }}" alt="profile" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
-                    <div class="interaction">
-                        <form action="{{ url_for('like_post', post_id=post.id) }}" method="POST" style="display: inline;">
-                            <button type="submit" class="btn-clear {% if post in current_user.liked_posts %}liked{% endif %}">
-                                {% if post in current_user.liked_posts %}❤️{% else %}🤍{% endif %} {{ post.liked_by.count() }}
-                            </button>
-                        </form>
+                    <div style="flex: 1;">
+                        <div class="tweet-header">
+                            <div>
+                                <span class="tweet-author" style="color: var(--text-main); font-weight: 700;">@{{ post.author.username }}</span>
+                                <span class="tweet-time" style="color: var(--text-muted);">· {{ post.created_at.strftime('%b %d') }}</span>
+                            </div>
+                        </div>
+                        <div class="tweet-content">
+                            <a href="{{ url_for('post_detail', post_id=post.id) }}" style="color: inherit; text-decoration: none;">
+                                {{ post.content }}
+                            </a>
+                            {% if post.image_url %}
+                                <div style="margin-top: 1rem; border-radius: 1rem; overflow: hidden; border: 1px solid var(--border);">
+                                    <img src="{{ url_for('static', filename=post.image_url) }}" style="width: 100%; display: block;" alt="Post image">
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="tweet-footer" style="border: none; padding-top: 0.8rem; justify-content: flex-start; gap: 4rem;">
+                            <div class="interaction">
+                                <a href="{{ url_for('post_detail', post_id=post.id) }}" class="btn-clear" style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i data-lucide="message-circle" style="width: 18px;"></i>
+                                    <span>{{ post.comments.count() }}</span>
+                                </a>
+                            </div>
+                            <div class="interaction">
+                                <form action="{{ url_for('like_post', post_id=post.id) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn-clear {% if post in current_user.liked_posts %}liked{% endif %}" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; color: inherit;">
+                                        {% if post in current_user.liked_posts %}
+                                            <i data-lucide="heart" style="width: 18px; fill: #e0245e; color: #e0245e;"></i>
+                                        {% else %}
+                                            <i data-lucide="heart" style="width: 18px;"></i>
+                                        {% endif %}
+                                        <span>{{ post.liked_by.count() }}</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         {% else %}
-            <div class="glass-panel" style="text-align: center; color: var(--text-muted);">
-                No posts yet.
+            <div style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                @{{ user.username }} hasn't posted anything yet.
             </div>
         {% endfor %}
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="edit-profile-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+    <div style="background: var(--bg-color); width: 100%; max-width: 600px; margin: 10% auto; border-radius: 1rem; overflow: hidden;">
+        <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0;">Edit Profile</h3>
+            <button onclick="document.getElementById('edit-profile-modal').style.display='none'" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main);">&times;</button>
+        </div>
+        <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data" style="padding: 1rem;">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Profile Image</label>
+                <input type="file" name="profile_image" accept="image/*" style="width: 100%; color: var(--text-main);">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Cover Image</label>
+                <input type="file" name="cover_image" accept="image/*" style="width: 100%; color: var(--text-main);">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Bio</label>
+                <textarea name="bio" rows="3" style="width: 100%; background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 0.5rem;">{{ user.bio or '' }}</textarea>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Location</label>
+                <input type="text" name="location" value="{{ user.location or '' }}" style="width: 100%; background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem; border-radius: 0.5rem;">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
+        </form>
     </div>
 </div>
 {% endblock %}
